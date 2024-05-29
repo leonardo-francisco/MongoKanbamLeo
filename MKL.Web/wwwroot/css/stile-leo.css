@@ -1,0 +1,29 @@
+﻿/*.kanban-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .kanban-board-header h2 {
+        margin: 0;
+    }
+
+    .kanban-board-header button {
+        font-size: 24px;
+    }*/
+
+.kanban-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .kanban-card .card-title {
+        margin: 0;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .kanban-card .drag-icon {
+        cursor: grab;
+    }

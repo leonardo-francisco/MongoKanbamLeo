@@ -1,0 +1,332 @@
+﻿@model ProjectViewModel
+@{
+    ViewData["Kanban"] = "Kanban";
+}
+
+@section Styles{
+    <link href="~/css/jkanban.min.css" rel="stylesheet" />
+    <link href="~/css/stile-leo.css" rel="stylesheet" />
+}
+
+
+<div class="container">
+    <h1>Kanban do Leozão</h1>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form id="projectForm" asp-controller="Kanban" asp-action="CreateProject">
+                <div class="mb-3">
+                    <label for="projectName" class="form-label">Nome do Projeto</label>
+                    <input type="text" class="form-control" asp-for="Name" id="projectName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="projectName" class="form-label">Descrição</label>
+                    <input type="text" class="form-control" asp-for="Description" id="projectDescription" required>
+                </div>
+                <div class="mb-3">
+                    <label for="projectName" class="form-label">Data Inicio</label>
+                    <input type="date" class="form-control" asp-for="StartDate" id="projectStartDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Criar Projeto</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="projectSelect" class="form-label">Selecione um Projeto</label>
+                <select class="form-select" id="projectSelect">
+                    <!-- Options will be added dynamically -->
+                </select>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div id="kanbanContainer" style="display: none;">
+        <p>Kanban para o Projeto:<span></span></p>
+        <div id="myKanbanLeo"></div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Adicionar Tarefa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">Título da Tarefa</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Descrição da Tarefa</label>
+                        <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskFile" class="form-label">Anexar Arquivo</label>
+                        <input type="file" class="form-control" id="taskFile">
+                    </div>
+                    <div class="mb-3">
+                        <label for="taskStatus" class="form-label">Mover Para</label>
+                        <select class="form-select" id="taskStatus">
+                            <option value="0">To Do</option>
+                            <option value="1">Doing</option>
+                            <option value="2">Done</option>
+                            <option value="3">Hold</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <input type="hidden" id="taskId">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    @* <script src="~/js/site.js"></script> *@
+    <script src="~/js/jkanban.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var kanban = new jKanban({
+                element: '#myKanbanLeo',
+                gutter: '15px',
+                widthBoard: '250px',
+                click: async function (el) {
+                    debugger;
+                    var taskId = $(el).attr('data-eid');
+                    if (taskId.length > 0) {
+                        try {
+                            const response = await fetch(`/Kanban/GetTaskById?id=${taskId}`);
+                            if (response.ok) {
+                                const task = await response.json();
+                                $('#taskTitle').val(task.title);
+                                $('#taskDescription').val(task.description);
+                                $('#taskStatus').val(task.status);
+                                $('#taskId').val(task.id);
+                                $('#taskModalLabel').text('Editar Tarefa');
+                                $('.modal-header').addClass('bg-warning text-white');
+                                var taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+                                taskModal.show();
+                            } else {
+                                console.error('Failed to fetch task details');
+                            }
+                        } catch (error) {
+                            console.error('Error fetching task details:', error);
+                        }
+                    }
+                },
+                dragBoards: true,
+                dragItems: true,
+            });
+
+            var taskList = [];
+
+            async function fetchProjects() {
+                try {
+                    const response = await fetch('/Kanban/GetAllProjects');
+                    if (response.ok) {
+                        projectList = await response.json();
+                        refreshProjectSelect();
+                    } else {
+                        console.error('Failed to fetch projects');
+                    }
+                } catch (error) {
+                    console.error('Error fetching projects:', error);
+                }
+            }
+
+            function refreshProjectSelect() {
+                var projectSelect = document.getElementById('projectSelect');
+                projectSelect.innerHTML = ''; // Clear existing options
+                projectList.forEach(project => {
+                    var option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    projectSelect.appendChild(option);
+                });
+            }
+
+            async function fetchTasksByProjectId(projectId) {
+                try {
+                    const response = await fetch(`/Kanban/GetTasksByProjectsId?projectId=${projectId}`);
+                    if (response.ok) {
+                        const tasks = await response.json();
+                        return tasks;
+                    } else {
+                        console.error('Failed to fetch tasks');
+                    }
+                } catch (error) {
+                    console.error('Error fetching tasks:', error);
+                }
+                return [];
+            }
+
+            // Definição do enum TaskStatus
+            var TaskStatus = {
+                NotStarted: 0,
+                InProgress: 1,
+                Completed: 2,
+                OnHold: 3
+            };
+
+           
+            function populateKanbanWithTasks(tasks) {
+                
+
+                const boards = {
+                    [TaskStatus.NotStarted]: [],
+                    [TaskStatus.InProgress]: [],
+                    [TaskStatus.Completed]: [],
+                    [TaskStatus.OnHold]: []
+                };
+
+                tasks.forEach(task => {
+                    // Convertendo o status para minúsculas para coincidir com o enum TaskStatus
+                    const status = task.status.toLowerCase();
+
+                    // Mapeando o status da tarefa para o enum TaskStatus
+                    const taskStatus = Object.keys(TaskStatus).find(key => key.toLowerCase() === status);
+
+                    if (taskStatus) {
+                        boards[TaskStatus[taskStatus]].push({
+                            id: task.id,
+                            title: `<div class="kanban-card" data-task-id="${task.id}">
+                                    <span class="card-title">${task.title}</span>
+                                    <span class="drag-icon">⇅</span>
+                                </div>`
+                        });
+                    } else {
+                        console.error('Status da tarefa inválido:', status);
+                    }
+                });
+
+                //kanban.removeBoards();
+                kanban.addBoards([
+                    {
+                        id: 'todo',
+                        title: `<div class="kanban-board-header bg-primary text-white p-2">
+                                <h2>To Do</h2>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#taskModal">+</button>
+                            </div>`,
+                        item: boards[TaskStatus.NotStarted]
+                    },
+                    {
+                        id: 'doing',
+                        title: `<div class="kanban-board-header bg-warning text-white p-2">
+                                <h2>Doing</h2>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#taskModal">+</button>
+                            </div>`,
+                        item: boards[TaskStatus.InProgress]
+                    },
+                    {
+                        id: 'done',
+                        title: `<div class="kanban-board-header bg-success text-white p-2">
+                                <h2>Done</h2>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#taskModal">+</button>
+                            </div>`,
+                        item: boards[TaskStatus.Completed]
+                    },
+                    {
+                        id: 'hold',
+                        title: `<div class="kanban-board-header bg-danger text-white p-2">
+                                <h2>Hold</h2>
+                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#taskModal">+</button>
+                            </div>`,
+                        item: boards[TaskStatus.OnHold]
+                    }
+                ]);
+            }
+
+            document.getElementById('projectSelect').addEventListener('change', async function () {
+                var selectedProjectId = this.value;
+                var projectName = this.options[this.selectedIndex].textContent;
+                if (selectedProjectId) {
+                    document.querySelector('#kanbanContainer span').textContent = projectName;
+                    document.getElementById('kanbanContainer').style.display = 'block';
+
+                    const tasks = await fetchTasksByProjectId(selectedProjectId);
+                    populateKanbanWithTasks(tasks);
+                } else {
+                    document.getElementById('kanbanContainer').style.display = 'none';
+                }
+            });
+
+            // Fetch projects on page load
+            fetchProjects();
+
+            document.getElementById('taskForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                var title = document.getElementById('taskTitle').value;
+                var description = document.getElementById('taskDescription').value;
+                var status = document.getElementById('taskStatus').value;
+                var taskId = document.getElementById('taskId').value;
+                var selectedProjectId = document.getElementById('projectSelect').value;
+
+                if (!selectedProjectId) {
+                    console.error('No project selected');
+                    return;
+                }
+
+                var task = {
+                    Title: title,
+                    Description: description,
+                    Status: status,
+                    ProjectId: selectedProjectId // Vincula a tarefa ao projeto selecionado
+                };
+
+                try {
+                    const response = await fetch('/Kanban/CreateTask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(task)
+                    });
+
+                    if (response.ok) {
+                        const createdTask = await response.json();
+                        if (!taskId) {
+                            task.id = createdTask.id; // Utilize o ID retornado pelo backend
+                            taskList.push(task);
+                        } else {
+                            var existingTaskIndex = taskList.findIndex(t => t.id == taskId);
+                            if (existingTaskIndex !== -1) {
+                                taskList[existingTaskIndex] = task;
+                                kanban.removeElement(taskId);
+                            }
+                        }
+
+                        kanban.addElement(status, {
+                            id: task.id,
+                            title: `<div class="kanban-card" data-task-id="${task.id}">
+                                        <span class="card-title">${title}</span>
+                                        <span class="drag-icon">⇅</span>
+                                    </div>`
+                        });
+
+                        document.getElementById('taskForm').reset();
+                        var taskModal = bootstrap.Modal.getInstance(document.getElementById('taskModal'));
+                        taskModal.hide();
+                        document.body.classList.remove('modal-open');
+                        var backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    } else {
+                        console.error('Failed to create task');
+                    }
+                } catch (error) {
+                    console.error('Error creating task:', error);
+                }
+            });
+
+            document.getElementById('taskModal').addEventListener('hidden.bs.modal', function () {
+                document.getElementById('taskForm').reset();
+                document.getElementById('taskId').value = '';
+            });
+        });
+    </script>
+}
