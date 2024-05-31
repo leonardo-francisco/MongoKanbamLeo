@@ -28,11 +28,35 @@
                     margin-top: -85px;
                 }
 
+        .alert-success {
+            color: white;
+            background-color: green;
+            border-color: green;
+        }
+
+        .alert-error {
+            color: white;
+            background-color: red;
+            border-color: red;
+        }
+
     </style>
 }
 
 <div id="login">
     <h3 class="text-center text-white pt-5">Login form</h3>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" id="successMessage">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-error" id="errorMessage">
+            @TempData["ErrorMessage"]
+        </div>
+    }
     <div class="container">
         <div id="login-row" class="row justify-content-center align-items-center">
             <div id="login-column" class="col-md-6">
@@ -58,3 +82,25 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            setTimeout(function () {
+                $("#successMessage").fadeOut("slow", function () {
+                    $(this).remove();
+                });
+            }, 5000); // 5 seconds
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            setTimeout(function () {
+                $("#errorMessage").fadeOut("slow", function () {
+                    $(this).remove();
+                });
+            }, 5000); // 5 seconds
+        });
+    </script>
+}

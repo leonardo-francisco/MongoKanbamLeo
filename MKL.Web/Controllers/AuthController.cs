@@ -30,7 +30,7 @@ namespace MKL.Web.Controllers
 
             var response = await _authService.LoginAsync(model);
 
-            if (response.IsSuccessStatusCode)
+            if (response != null)
             {
                 var result = await response.Content.ReadAsStringAsync();
                 JObject json = JObject.Parse(result);
@@ -42,6 +42,7 @@ namespace MKL.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            TempData["ErrorMessage"] = "Usuário ou senha inválida";
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
@@ -63,9 +64,11 @@ namespace MKL.Web.Controllers
 
             if (response.IsSuccessStatusCode)
             {
+                TempData["SuccessMessage"] = "Usuário cadastrado com sucesso!";
                 return RedirectToAction("Login");
             }
 
+            TempData["ErrorMessage"] = "Erro ao cadastrar";
             ModelState.AddModelError(string.Empty, "Registration failed.");
             return View(model);
         }
