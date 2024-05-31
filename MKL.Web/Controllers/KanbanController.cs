@@ -45,7 +45,7 @@ namespace MKL.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return View("Index",model);
             }
 
             var response = await _kanbanService.CreateProjectAsync(model);

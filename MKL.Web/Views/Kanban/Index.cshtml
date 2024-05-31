@@ -16,15 +16,18 @@
             <form id="projectForm" asp-controller="Kanban" asp-action="CreateProject">
                 <div class="mb-3">
                     <label for="projectName" class="form-label">Nome do Projeto</label>
-                    <input type="text" class="form-control" asp-for="Name" id="projectName" required>
+                    <input type="text" class="form-control" asp-for="Name" id="projectName">
+                    <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
                     <label for="projectName" class="form-label">Descrição</label>
-                    <input type="text" class="form-control" asp-for="Description" id="projectDescription" required>
+                    <input type="text" class="form-control" asp-for="Description" id="projectDescription">
+                    <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
                     <label for="projectName" class="form-label">Data Inicio</label>
-                    <input type="date" class="form-control" asp-for="StartDate" id="projectStartDate" required>
+                    <input type="date" class="form-control" asp-for="StartDate" id="projectStartDate">
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
                 </div>
                 <button type="submit" class="btn btn-primary">Criar Projeto</button>
             </form>
