@@ -30,7 +30,7 @@ namespace MKL.API.Controllers
                 var result = await _userService.VerifyPasswordSignInAsync(user, login.UserPassword);
                 if (result.Succeeded)
                 {
-                    var token = TokenConfiguration.GenerateToken(user.FirstName);
+                    var token = TokenConfiguration.GenerateToken(user.Name);
                     user.UserPassword = "";
                     return Ok(new
                     {

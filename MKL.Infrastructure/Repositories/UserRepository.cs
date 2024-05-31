@@ -25,12 +25,12 @@ namespace MKL.Infrastructure.Repositories
         {
             ApplicationUser appUser = new ApplicationUser
             {
-                UserName = user.FirstName,
+                UserName = user.Name,
                 Email = user.EmailUser,
                 PasswordHash = user.UserPassword
             };
             IdentityResult result = await _userManager.CreateAsync(appUser, user.UserPassword);
-            if (result.Succeeded && user.FirstName == "Administrador")
+            if (result.Succeeded && user.Name == "Administrador")
             {
                 await _userManager.AddToRoleAsync(appUser, "Admin");
             }
@@ -60,7 +60,7 @@ namespace MKL.Infrastructure.Repositories
                 users.Add(new User
                 {
                     Id = item.Id,
-                    FirstName = item.UserName,
+                    Name = item.UserName,
                     EmailUser = item.Email,
                     Role = roleName
                 });
@@ -81,7 +81,7 @@ namespace MKL.Infrastructure.Repositories
             var user = new User
             {
                 Id = appUser.Id,
-                FirstName = appUser.UserName,
+                Name = appUser.UserName,
                 EmailUser = appUser.Email,
                 UserPassword = appUser.PasswordHash,
                 Role = roleName
@@ -98,7 +98,7 @@ namespace MKL.Infrastructure.Repositories
             var user = new User
             {
                 Id = appUser.Id,
-                FirstName = appUser.UserName,
+                Name = appUser.UserName,
                 EmailUser = appUser.Email,
                 Role = roleName
             };

@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MKL.Application", "MKL.Appl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5 - Web", "5 - Web", "{3065AE58-4F4E-428A-86AE-F26897344106}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MKL.Web", "MKL.Web\MKL.Web.csproj", "{A2FD200D-CA8B-434E-B310-8845CD933524}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MKL.Web", "MKL.Web\MKL.Web.csproj", "{A2FD200D-CA8B-434E-B310-8845CD933524}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

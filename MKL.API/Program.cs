@@ -30,7 +30,10 @@ builder.Services.Configure<MKL.Infrastructure.Persistence.MongoDbSettings>(build
 builder.Services.AddSingleton<MongoDbContext>();
 
 // Adicionar ASP.NET Mongo Identity
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+{
+    options.User.AllowedUserNameCharacters = null; // Permitir todos os caracteres
+});
     
 var mongoDbIdentityConfiguration = new MongoDbIdentityConfiguration
 {

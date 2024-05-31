@@ -37,7 +37,7 @@ namespace MKL.Web.Services
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
-                    new Claim(ClaimTypes.Name, userDto.FirstName)
+                    new Claim(ClaimTypes.Name, userDto.Name)
                 };
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -50,8 +50,6 @@ namespace MKL.Web.Services
 
         public async Task<HttpResponseMessage> RegisterAsync(RegisterViewModel model)
         {
-            model.LastName = "string";
-            model.Role = "string";
             var jsonContent = JsonConvert.SerializeObject(model);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
